@@ -94,6 +94,8 @@ do_test(void)
 	    printf("**** ERROR, should be: %s\n", test[i + 1]);
 	    status = 1;
 	}
+
+	printf("Bingo! MD5 of (\"%s\") = %s \n",test[i], hex_output);
     }
     if (status == 0)
 	puts("md5 self-test completed successfully.");
