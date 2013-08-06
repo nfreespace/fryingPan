@@ -108,11 +108,11 @@ main(int argc, char *argv[])
   char hex_output[16*2 + 1];
   int di;  
 
-
+  int counter = 1;
     while (topcur != NULL)
     {
-      printf("WORD: %s  weight:%f  time:%d  attr:%s \n", 
-	topcur->word, topcur->weight, topcur->times, topcur->attr);
+      printf("%dth WORD: %s  weight:%f  time:%d  attr:%s \n", 
+	counter,topcur->word, topcur->weight, topcur->times, topcur->attr);
 
   //      md5_state_t state;
   //      md5_byte_t digest[16];
@@ -128,6 +128,7 @@ main(int argc, char *argv[])
         }
 	printf("MD5 of the word is: %s\n",hex_output);	
       topcur = topcur->next;
+	counter++;
     }
     scws_free_tops(topres);
   
