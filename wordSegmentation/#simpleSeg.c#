@@ -2,8 +2,7 @@
 #include <scws.h>
 #include <md5.h>
 #define SCWS_PREFIX     "/usr/local/scws"
-#define PAGESIZE 512
-#define MAXSIZE 512*256
+#define PAGESIZE 1024
 static const char *const usage = "\
 Usage:\n\
     simpleSeg --demo                 # run the demo\n\
@@ -18,26 +17,64 @@ Usage:\n\
 int readfile(char *file_name, char **strToReturn)
 {
 
-  
+  char *buf = NULL, *tmp = NULL;
   size_t bufSiz = 0;
-  char message[MAXSIZE] = "\0";
-char buffer[PAGESIZE];
+  char inputBuf[PAGESIZE];
   FILE *in;
 
-  printf("begin read file:%s\n",file_name);
+
   in = fopen(file_name, "r");
-  int position = 0;
   if (in)
   {
- 	while(fgets(buffer,PAGESIZE,in)){
-		strcat(message,buffer);
-		position = position + sizeof(buffer)-sizeof(char)*4;
-		printf("%s\n", buffer);
-	} 
-        fclose(in);
-}
- printf("whole txt: %s\n",message);
- *strToReturn = message;
+    /**
+     * Read a page at a time until reaching the end of the file
+     */
+    while (fgets(inputBuf, sizeof inputBuf, in) != NULL)
+    {
+      /**
+       * Extend the dynamic buffer by the length of the string
+       * in the input buffer
+       */
+      tmp = realloc(buf, bufSiz + strlen(inputBuf) + 1);
+      if (tmp)
+      {
+        /**
+         * Add to the contents of the dynamic buffer
+         */
+        buf = tmp;
+        buf[bufSiz] = 0;
+        strcat(buf, inputBuf);
+        bufSiz += strlen(inputBuf) + 1;
+      }
+      else
+      {
+        printf("Unable to extend dynamic buffer: releasing allocated memory\n");
+        free(buf);
+        buf = NULL;
+        break;
+      }
+    }
+
+    if (feof(in))
+      printf("Reached the end of input file %s\n", argv[1]);
+    else if (ferror(in))
+      :      printf("Error while reading input file %s\n", argv[1]);
+
+    if (buf)
+    {
+      printf("File contents:\n%s\n", buf);
+      printf("Read %lu characters from %s\n", 
+       (unsigned long) strlen(buf), argv[1]);
+    }
+
+    free(buf);
+    fclose(in);   
+  }
+  else
+  {
+    printf("Unable to open input file %s\n", argv[1]);
+  }
+
   return 0;
 }
 
@@ -45,7 +82,7 @@ main(int argc, char *argv[])
 {
     char *text;
     
-    char *demo  = "ï¼ˆä¸­å¤®ç¤¾è¨˜è€…é™³æ·‘èŠ¬å°ä¸­28æ—¥é›»ï¼‰æ´ªä»²ä¸˜å§å§æ´ªæ…ˆåº¸ä»Šå¤©æ™šé–“å›žæ‡‰å¤–ç•Œæ‰¹è©•è¡¨ç¤ºæ´ªä»²ä¸˜ï¼Œä¸è¦æ±‚ç¤¾æœƒéƒ½ç«™åœ¨å®¶>å±¬è§’åº¦çœ‹å¾…å…¨æ¡ˆï¼Œä½†ç›¼èƒ½é«”è«’è¢«å®³äººå®¶å±¬å¿ƒæƒ…ï¼Œçµ¦å¤šé»žç©ºé–“ã€‚";
+    char *demo  = "’¡Ê’Ãæ’±û’¼Ò’µ­’¼Ô’ÄÄ’½Ê’çî’Âæ’Ãæ28’Æü’ÅÅ’¡Ë’¹¿’Ãç’µÖ’°¹’°¹’¹¿’»ü’ÍÇ’º£’Å·˜½¦’´Ö’²ó’Øæ’³°’³¦’Èã’É¾’É½’¼¨’¹¿’Ãç’µÖ’¡¤’ÉÔ’Í×’µá’¼Ò’Ðò’ÅÔ’ãë’ºß’²È>’Ö¤’³Ñ’ÅÙ’´Ç’ÂÔ’Á´’°Æ’¡¤’Ã¢”ÎÙ’Ç½’ñó’ÎÊ’Èï’³²’¿Í’²È’Ö¤’¿´’¾ð’¡¤’µë’Â¿’óÚ’¶õ’´Ö’¡£";
     if (argc == 2) {
 	if (!strcmp(argv[1], "--demo")) {
 	    printf("demo\n\n");
